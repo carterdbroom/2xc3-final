@@ -160,4 +160,14 @@ def create_random_weighted_graph(nodes, edges):
 
     return graph
 
+def DFS_3(graph,src):
+    # This is the array that keeps track of the elements we have visited during the DFS.
+    marked = [False for i in range(len(graph.graph))]
+    # This is the array that keeps track of the last 
+    edgeTo = {}
+
+    # We run DFS on our graph from the given src node.
+    DFS_3_Helper1(graph, src, marked, edgeTo)
+
+    return edgeTo
 
