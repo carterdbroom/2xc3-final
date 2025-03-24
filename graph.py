@@ -1,5 +1,61 @@
 
-class Graph():
+
+# graph implementation using adjacency list   
+class AdjacencyGraph():
+    # using adjacency list
+    def __init__(self, nodes):
+        self.graph = []
+        # node numbered 0-1
+        for node in range(nodes):
+            self.graph.append([])
+        
+    def has_edge(self, src, dst):
+        return src in self.graph[dst]
+    
+    # We edited this function so that there is only one entry if there is a self loop.
+    def add_edge(self,src,dst):
+        if not self.has_edge(src,dst):
+            self.graph[src].append(dst)
+            if src != dst:
+                self.graph[dst].append(src)
+    
+    def get_graph(self,):
+        return self.graph
+    
+        # This is a modified DFS that checks for cycles.
+    def has_cycle_helper(v, adj_list, visited_list, parent):
+        visited_list[v] = True
+
+        for i in adj_list[v]:
+            if not visited_list[i]:
+                if has_cycle_helper(i, adj_list, visited_list, v):
+                    return True
+
+            elif i != parent:
+                return True
+
+        return False 
+    
+    def has_cycle(self,):
+        visited_list = [False for i in range(len(self.graph))]
+
+        for i in range(len(self.graph)):
+            
+            if not visited_list[i]:
+                if has_cycle_helper(i, self.graph, visited_list, -1):
+                    return True
+        return False
+
+    def is_connected(self,node1,node2):
+        # We check the first node since the predecessor dictionary does not include it in the keys.
+        if node1 == node2:
+            return True
+        # This gives us the predecessor dictionary, so that will include everything except the first nodes.
+        if node2 in DFS_3(self, node1).keys():
+            return True
+        return False
+
+class WeightedGraph():
     def __init__(self, nodes):
         self.graph = {}
         self.weight = {}
@@ -47,9 +103,35 @@ class Graph():
         # because it is undirected
         return total/2
 
+def create_random_adjacency_graph(nodes, edges):
+    # Creating all the nodes in the graph, no edges connecting them
+    graph = GraphII(nodes)
+
+    # The max number of edges is n choose 2. We also add n since we are allowing self loops
+    if edges > (nodes + (nodes*(nodes - 1))/2): 
+        print("There cannot be double edges in your graph, there must be less edges than nodes!")
+        return  graph
+
+    # We create the given amount of edges in the graph.
+    for _ in range(edges):
+        # We want to continue to try and find suitable nodes until we do.
+        while True:
+            # We choose two random nodes for the edge to run between.
+            node1 = random.randint(0, nodes - 1)
+            node2 = random.randint(0, nodes - 1)
+
+            # If the graph does not have the edge we have generated, then we add it to the graph.
+            # We break the "while True" statement to continue onto the next edge. 
+            # Otherwise, we continue this process by generating two new nodes.
+            if not graph.has_edge(node1, node2):
+                graph.add_edge(node1, node2)
+                break
+    
+
+    return graph
 
 # Here is the function that creates random graphs. 
-def create_random_graph(nodes, edges):
+def create_random_weighted_graph(nodes, edges):
     # Creating all the nodes in the graph, no edges connecting them
     graph = Graph(nodes)
 
@@ -77,3 +159,5 @@ def create_random_graph(nodes, edges):
     
 
     return graph
+
+
