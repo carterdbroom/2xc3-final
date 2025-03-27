@@ -1,4 +1,4 @@
-
+import random
 
 # graph implementation using adjacency list   
 class AdjacencyGraph():
@@ -23,12 +23,12 @@ class AdjacencyGraph():
         return self.graph
     
         # This is a modified DFS that checks for cycles.
-    def has_cycle_helper(v, adj_list, visited_list, parent):
+    def has_cycle_helper(self, v, adj_list, visited_list, parent):
         visited_list[v] = True
 
         for i in adj_list[v]:
             if not visited_list[i]:
-                if has_cycle_helper(i, adj_list, visited_list, v):
+                if self.has_cycle_helper(i, adj_list, visited_list, v):
                     return True
 
             elif i != parent:
@@ -42,7 +42,7 @@ class AdjacencyGraph():
         for i in range(len(self.graph)):
             
             if not visited_list[i]:
-                if has_cycle_helper(i, self.graph, visited_list, -1):
+                if self.has_cycle_helper(i, self.graph, visited_list, -1):
                     return True
         return False
 
@@ -105,7 +105,7 @@ class WeightedGraph():
 
 def create_random_adjacency_graph(nodes, edges):
     # Creating all the nodes in the graph, no edges connecting them
-    graph = GraphII(nodes)
+    graph = AdjacencyGraph(nodes)
 
     # The max number of edges is n choose 2. We also add n since we are allowing self loops
     if edges > (nodes + (nodes*(nodes - 1))/2): 
@@ -133,7 +133,7 @@ def create_random_adjacency_graph(nodes, edges):
 # Here is the function that creates random graphs. 
 def create_random_weighted_graph(nodes, edges):
     # Creating all the nodes in the graph, no edges connecting them
-    graph = Graph(nodes)
+    graph = WeightedGraph(nodes)
 
     # The max number of edges is n choose 2. We also add n since we are allowing self loops
     if edges > (nodes + (nodes*(nodes - 1))/2): 
@@ -167,7 +167,7 @@ def DFS_3(graph,src):
     edgeTo = {}
 
     # We run DFS on our graph from the given src node.
-    DFS_3_Helper1(graph, src, marked, edgeTo)
+    DFS_3_Helper1(graph, src, marked, edgeTo) # Where's the helper?
 
     return edgeTo
 
