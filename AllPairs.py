@@ -130,3 +130,26 @@ def allPair(graph):
                 all_pairs[u][v] = float('inf')
     
     return all_pairs
+
+# Floyd Warshall's algorithm like the one from the graded labs
+def floyd_warshall(graph):
+    n = graph.number_of_nodes()
+    distances = [[float('inf')] * n for _ in range (n)]
+
+    # Set all self loops/edges to 0
+    for i in range (n):
+        distances[i][i] = 0
+    
+    # Looping through the matrix and adding the weights at each position of the distances matrix
+    for node in graph.graph:
+        for neighbor in graph.graph[node]:
+            distances[node][neighbor] = graph.weight[(node,neighbor)]
+    
+    # Main part of Floyd Warshall's algorithm
+    for k in range (n):
+        for i in range (n):
+            for j in range (n):
+                if distances[i][k] + distances[k][j] < distances[i][j]:
+                    distances[i][j] = distances[i][k] + distances[k][j]
+
+    return distances
