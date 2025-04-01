@@ -3,59 +3,118 @@ import random
 import math
 # For the heuristic function we will use Euclidean Distance Heuristics. 
 # h = sqrt( (current_cell.x - goal.x)**2 + (current_cell.y - goal.y)**2)
+class Item:
+    def __init__(self, value, key):
+        self.key = key
+        self.value = value
 
-class PriorityQueue:
-    def __init__(self):
-        self.heap = []
-        self.entry_finder = {}
+# This is the code the professor made in class. We made a few tweaks for it to work in our case but otherwise it is the same.
+class MinHeap:
+    def __init__(self, data):
+        self.items = data
+        self.length = len(data) 
+        self.map = {}
 
-    def push(self, item, priority):
-        # Append new element and restore the heap property by sifting up
-        self.heap.append((priority, item))
-        self.entry_finder[item] = priority
-        self._sift_up(len(self.heap) - 1)
+        if self.length > 0: 
+            self.build_heap()
+            for i in range(self.length):
+                self.map[self.items[i].value] = i
 
-    def pop(self):
-        # Remove and return the element with the smallest priority
-        if not self.heap:
-            raise IndexError("pop from empty priority queue")
-        # Swap the first element with the last, remove the last element
-        self._swap(0, len(self.heap) - 1)
-        # Also note that heap is a list and this is not a recursive call, just a pop on a list, confused me for a second.
-        priority, item = self.heap.pop()
-        # Removing the we are popping from the dictionary.
-        del self.entry_finder[item]
-        # Restore the heap property by sifting down from the root
-        self._sift_down(0)
-        return item, priority
+    def find_left_index(self,index):
+        return 2 * index + 1
+
+    def find_right_index(self,index):
+        return 2 * index + 1
+
+    def find_parent_index(self,index):
+        return (index - 1) // 2
+    
+    def heapify(self, index):
+        smallest_known_index = index
+
+        if self.find_left_index(index) < self.length and self.items[self.find_left_index(index)].key < self.items[smallest_known_index].key:
+            smallest_known_index = self.find_left_index(index)
+
+        if self.find_right_index(index) < self.length and self.items[self.find_right_index(index)].key < self.items[smallest_known_index].key:
+            smallest_known_index = self.find_right_index(index)
+
+        if smallest_known_index != index:
+            self.items[index], self.items[smallest_known_index] = self.items[smallest_known_index], self.items[index]
+            
+            # update map
+            self.map[self.items[index].value] = index
+            self.map[self.items[smallest_known_index].value] = smallest_known_index
+
+            # recursive call
+            self.heapify(smallest_known_index)
+
+    def build_heap(self,):
+        for i in range(self.length // 2 - 1, -1, -1):
+            self.heapify(i) 
+
+    def insert(self, node):
+        if len(self.items) == self.length:
+            self.items.append(node)
+        else:
+            self.items[self.length] = node
+        self.map[node.value] = self.length
+        self.length += 1
+        self.swim_up(self.length - 1)
+
+    def insert_nodes(self, node_list):
+        for node in node_list:
+            self.insert(node)
+
+    def swim_up(self, index):
+        
+        while index > 0 and self.items[index].key < self.items[self.find_parent_index(index)].key:
+            #swap values
+            self.items[index], self.items[self.find_parent_index(index)] = self.items[self.find_parent_index(index)], self.items[index]
+            #update map
+            self.map[self.items[index].value] = index
+            self.map[self.items[self.find_parent_index(index)].value] = self.find_parent_index(index)
+            index = self.find_parent_index(index)
+
+    def get_min(self):
+        if len(self.items) == 0: 
+            return None
+        return self.items[0]
+
+    def extract_min(self,):
+        if self.length == 0: 
+            return None
+        #xchange
+        self.items[0], self.items[self.length - 1] = self.items[self.length - 1], self.items[0]
+        #update map
+        self.map[self.items[self.length - 1].value] = self.length - 1
+        self.map[self.items[0].value] = 0
+
+        min_node = self.items[self.length - 1]
+        self.length -= 1
+        self.map.pop(min_node.value)
+        if (self.length > 0):
+            self.heapify(0)
+
+        return min_node
+
+    def decrease_key(self, value, new_key):
+        if new_key >= self.items[self.map[value]].key:
+            return
+        index = self.map[value]
+        self.items[index].key = new_key
+        self.swim_up(index)
+
+    def get_element_from_value(self, value):
+        if value in self.map:
+            return self.items[self.map[value]]
+        return None
+
+    # Checks if an element is in the heap.
+    def is_not_in_heap(self, node_id):
+        return node_id not in self.map 
 
     def is_empty(self):
-        return len(self.heap) == 0
-
-    def _sift_up(self, index):
-        parent = (index - 1) // 2
-        while index > 0 and self.heap[index][0] < self.heap[parent][0]:
-            self._swap(index, parent)
-            index = parent
-            parent = (index - 1) // 2
-
-    def _sift_down(self, index):
-        n = len(self.heap)
-        while True:
-            left = 2 * index + 1
-            right = 2 * index + 2
-            smallest = index
-            if left < n and self.heap[left][0] < self.heap[smallest][0]:
-                smallest = left
-            if right < n and self.heap[right][0] < self.heap[smallest][0]:
-                smallest = right
-            if smallest == index:
-                break
-            self._swap(index, smallest)
-            index = smallest
-
-    def _swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+        return self.length == 0
 
 def dijkstra(graph, source, relaxed):
     distances = {node: float('inf') for node in graph.graph}
@@ -166,7 +225,7 @@ def create_random_weighted_graph(nodes, edges):
             # If the graph does not have the edge we have generated, then we add it to the graph.
             # We break the "while True" statement to continue onto the next edge. 
             # Otherwise, we continue this process by generating two new nodes.
-            if not graph.has_edge(node1, node2):
+            if not graph.has_edge(node1, node2) and (node1 != node2):
                 graph.add_edge(node1, node2)
                 break
     return graph
@@ -195,8 +254,8 @@ def A_Star(graph, source, destination, heuristic):
     f_score[source] = heuristic[source]
 
     # Creating a heap and pushing the value of g (which is 0) and then the value of h (which we get from our heuristic).
-    heap = PriorityQueue()
-    heap.push(source, 0 + heuristic[source])
+    heap = MinHeap([])
+    heap.insert(Item(source, 0 + heuristic[source]))
 
     # This will keep track of where each node came from.
     came_from = {}
@@ -206,11 +265,12 @@ def A_Star(graph, source, destination, heuristic):
         
         # Popping the top element off the heap. This is the element with the smallest f score, which takes the actual
         # weight and the heuristic into account.
-        current_node, current_total_score = heap.pop()
+        node = heap.extract_min()
+        current_node, current_total_score = node.key, node.value
 
         # If we have reached our destination node we return. 
         if current_node == destination: 
-            return came_from
+            return reconstruct_path(came_from, source, destination)
         
         # Iterating through all of the nodes that are connected to the node we are currently at. 
         for connecting_node in graph.graph[current_node]:
@@ -224,8 +284,8 @@ def A_Star(graph, source, destination, heuristic):
 
                 # Not sure on this part may need to change it.
                 # We want to add the element with the smallest, but right this just adds the first.
-                if not heap.entry_finder[connecting_node]:
-                    heap.push(connecting_node, f_score[connecting_node])
+                if heap.is_not_in_heap(connecting_node):
+                    heap.insert(Item(connecting_node, f_score[connecting_node]))
     return ()
 
 # Given an dictionary that tracks where each node came from and a source and destination nodes, reconstructs the path that was taken.
