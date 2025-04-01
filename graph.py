@@ -10,7 +10,7 @@ class AdjacencyGraph():
             self.graph.append([])
         
     def has_edge(self, src, dst):
-        return src in self.graph[dst]
+        return dst in self.graph[src]
     
     # We edited this function so that there is only one entry if there is a self loop.
     def add_edge(self,src,dst):
@@ -22,7 +22,7 @@ class AdjacencyGraph():
     def get_graph(self,):
         return self.graph
     
-        # This is a modified DFS that checks for cycles.
+    # This is a modified DFS that checks for cycles.
     def has_cycle_helper(self, v, adj_list, visited_list, parent):
         visited_list[v] = True
 
