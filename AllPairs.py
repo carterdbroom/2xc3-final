@@ -152,4 +152,11 @@ def floyd_warshall(graph):
                 if distances[i][k] + distances[k][j] < distances[i][j]:
                     distances[i][j] = distances[i][k] + distances[k][j]
 
+    print(distances)
     return distances
+
+
+graph1 = graph.create_random_weighted_graph(4, 9)
+print(graph1.graph)
+print(graph1.weight)
+floyd_warshall(graph1)

@@ -131,7 +131,7 @@ def create_random_adjacency_graph(nodes, edges):
     return graph
 
 # Here is the function that creates random graphs. 
-def create_random_weighted_graph(nodes, edges):
+def create_random_weighted_graph(nodes, edges, high, low):
     # Creating all the nodes in the graph, no edges connecting them
     graph = WeightedGraph(nodes)
 
@@ -147,27 +147,18 @@ def create_random_weighted_graph(nodes, edges):
             # We choose two random nodes for the edge to run between.
             node1 = random.randint(0, nodes - 1)
             node2 = random.randint(0, nodes - 1)
-            weight1 = random.randint(0, nodes - 1)
+            weight1 = random.randint(low, high)
 
             # If the graph does not have the edge we have generated, then we add it to the graph.
             # We break the "while True" statement to continue onto the next edge. 
             # Otherwise, we continue this process by generating two new nodes.
             # Added a check to see if the weight is valid too. 
-            if not graph.has_edge(node1, node2) and not graph.has_edge_with_weight(node1, node2, weight1):
+            if not graph.has_edge(node1, node2) and (node1 != node2):
                 graph.add_edge(node1, node2, weight1)
                 break
     
 
     return graph
 
-def DFS_3(graph,src):
-    # This is the array that keeps track of the elements we have visited during the DFS.
-    marked = [False for i in range(len(graph.graph))]
-    # This is the array that keeps track of the last 
-    edgeTo = {}
 
-    # We run DFS on our graph from the given src node.
-    DFS_3_Helper1(graph, src, marked, edgeTo) # Where's the helper?
-
-    return edgeTo
 
