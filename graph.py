@@ -55,7 +55,7 @@ class AdjacencyGraph():
             return True
         return False
 
-class WeightedGraph():
+class WeightedDiGraph():
     def __init__(self, nodes):
         self.graph = {}
         self.weight = {}
@@ -81,8 +81,8 @@ class WeightedGraph():
             self.weight[(node1, node2)] = weight
 
             #since it is undirected
-            self.graph[node2].append(node1)
-            self.weight[(node2, node1)] = weight
+            #self.graph[node2].append(node1)
+            #self.weight[(node2, node1)] = weight
 
     def number_of_nodes(self,):
         return len(self.graph)
