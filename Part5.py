@@ -16,6 +16,12 @@ london_stations_data = parse_csv("london_stations.csv")
 print(london_connections_data)
 print(london_stations_data)
 
-def build_graph():
+
+
+def build_graph(connections, stations):
+    connections_graph = graph.WeightedGraph()
+    for row in connections:
+        connections_graph.add_edge(row['station1'],row['station2'],row['time'])
+    
     
     return
