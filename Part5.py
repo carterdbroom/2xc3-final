@@ -58,3 +58,4 @@ london_stations_data = parse_csv("london_stations.csv")
 test_graph = build_graph(london_connections_data,london_stations_data, 70)
 
 print(test_graph.graph)
+print(test_graph.heuristic)
