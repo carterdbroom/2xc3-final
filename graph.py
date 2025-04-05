@@ -10,7 +10,7 @@ class AdjacencyGraph():
             self.graph.append([])
         
     def has_edge(self, src, dst):
-        return src in self.graph[dst]
+        return dst in self.graph[src]
     
     # We edited this function so that there is only one entry if there is a self loop.
     def add_edge(self,src,dst):
@@ -22,7 +22,7 @@ class AdjacencyGraph():
     def get_graph(self,):
         return self.graph
     
-        # This is a modified DFS that checks for cycles.
+    # This is a modified DFS that checks for cycles.
     def has_cycle_helper(self, v, adj_list, visited_list, parent):
         visited_list[v] = True
 
@@ -55,7 +55,7 @@ class AdjacencyGraph():
             return True
         return False
 
-class WeightedGraph():
+class WeightedDiGraph():
     def __init__(self, nodes):
         self.graph = {}
         self.weight = {}
@@ -81,8 +81,8 @@ class WeightedGraph():
             self.weight[(node1, node2)] = weight
 
             #since it is undirected
-            self.graph[node2].append(node1)
-            self.weight[(node2, node1)] = weight
+            #self.graph[node2].append(node1)
+            #self.weight[(node2, node1)] = weight
 
     def number_of_nodes(self,):
         return len(self.graph)
