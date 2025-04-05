@@ -4,7 +4,7 @@ import math
 # For the heuristic function we will use Euclidean Distance Heuristics. 
 # h = sqrt( (current_cell.x - goal.x)**2 + (current_cell.y - goal.y)**2)
 class Item:
-    def __init__(self, value, key):
+    def __init__(self, key, value):
         self.key = key
         self.value = value
 
@@ -270,7 +270,7 @@ def A_Star(graph, source, destination, heuristic):
 
         # If we have reached our destination node we return. 
         if current_node == destination: 
-            return reconstruct_path(came_from, source, destination)
+            return (came_from, (reconstruct_path(came_from, source, destination)))
         
         # Iterating through all of the nodes that are connected to the node we are currently at. 
         for connecting_node in graph.graph[current_node]:
@@ -286,7 +286,7 @@ def A_Star(graph, source, destination, heuristic):
                 # We want to add the element with the smallest, but right this just adds the first.
                 if heap.is_not_in_heap(connecting_node):
                     heap.insert(Item(connecting_node, f_score[connecting_node]))
-    return ()
+    return (came_from, reconstruct_path(came_from, source, destination))
 
 # Given an dictionary that tracks where each node came from and a source and destination nodes, reconstructs the path that was taken.
 def reconstruct_path(came_from, source, destination):
@@ -304,3 +304,42 @@ def reconstruct_path(came_from, source, destination):
         path.append(current)
     # We have to reverse the list in the end since we are adding elements in reverse order.
     return path[::-1]
+
+
+
+def test_a_star():
+    # Set a seed for reproducibility
+    random.seed(42)
+
+    # Create a random weighted graph with 10 nodes and 20 edges
+    nodes = 10
+    edges = 20
+    graph = create_random_weighted_graph(nodes, edges)
+
+    # Pick source and destination
+    source = 0
+    destination = 9  # You can randomize if you want
+
+    # Calculate heuristic based on Euclidean distance
+    heuristic = calculate_heuristic(graph, destination)
+
+    # Run A* algorithm
+    came_from, path = A_Star(graph, source, destination, heuristic)
+
+    # Print results
+    print(f"Source node: {source}")
+    print(f"Destination node: {destination}")
+    print("Path found by A*:")
+    print(path)
+
+    # Optional: print the total path cost
+    if path:
+        cost = 0
+        for i in range(len(path) - 1):
+            cost += graph.weight[(path[i], path[i+1])]
+        print(f"Total cost: {cost:.2f}")
+    else:
+        print("No path found.")
+
+
+test_a_star()
