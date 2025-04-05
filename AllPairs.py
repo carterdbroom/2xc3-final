@@ -5,32 +5,32 @@ class PriorityQueue:
         self.heap = []
 
     def push(self, item, priority):
-        # Append new element and restore the heap property by sifting up
         self.heap.append((priority, item))
-        self._sift_up(len(self.heap) - 1)
+        self.swim(len(self.heap) - 1)
 
     def pop(self):
-        # Remove and return the element with the smallest priority
         if not self.heap:
-            raise IndexError("pop from empty priority queue")
-        # Swap the first element with the last, remove the last element
+            print("Cannot remove from an empty heap")
+            return 
+        
+        # Swap the first element with the last and then we remove the last element with pop
         self._swap(0, len(self.heap) - 1)
         priority, item = self.heap.pop()
-        # Restore the heap property by sifting down from the root
-        self._sift_down(0)
+
+        self.sink(0)
         return item, priority
 
     def is_empty(self):
         return len(self.heap) == 0
 
-    def _sift_up(self, index):
+    def swim(self, index):
         parent = (index - 1) // 2
         while index > 0 and self.heap[index][0] < self.heap[parent][0]:
             self._swap(index, parent)
             index = parent
             parent = (index - 1) // 2
 
-    def _sift_down(self, index):
+    def sink(self, index):
         n = len(self.heap)
         while True:
             left = 2 * index + 1
@@ -49,7 +49,7 @@ class PriorityQueue:
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
 
 
-def dijkstra(graph, source, relaxed):
+def dijkstra(graph, source):
     distances = {node: float('inf') for node in graph.graph}
     distances[source] = 0
 
@@ -57,18 +57,17 @@ def dijkstra(graph, source, relaxed):
 
     minHeap.push(source, 0)
 
-    while not minHeap.is_empty:
+    while not minHeap.is_empty():
         current_node, current_distance = minHeap.pop()
         
         if current_distance > distances[current_node]:
             continue
 
         for neighbor in graph.graph[current_node]:
-            if (current_node, neighbor) in relaxed:
-                new_distance = current_distance + relaxed[(current_node, neighbor)]
-                if new_distance < distances[neighbor]:
-                    distances[neighbor] = new_distance
-                    minHeap.push(neighbor,new_distance)
+            distance = current_distance + graph.weight[(current_node, neighbor)]
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                minHeap.push(neighbor, distance)
 
     return distances
 
@@ -91,52 +90,21 @@ def bellman_ford(num_nodes, edges, source):
     
     return hashmap
 
-
+# Basically running Dijkstra's algorithm for V times where each pass we run it on a different source
+# so we eventually run it with every node being a source one
 def allPair(graph):
-    n = graph.number_of_nodes()
-
-    edges = []
-    for u in graph.graph():
-        for v in graph.graph[u]:
-            weight = graph.weights[(u,v)]
-            edges.append((u,v,weight))
-
-    for v in range(n):
-        edges.append((n,v,0))
+    shortest_paths = {}
+    for node in graph.graph.keys():
+        shortest_paths[node] = dijkstra(graph,node)
     
-    num_nodes = n + 1
+    return shortest_paths
 
-    hashmap = bellman_ford(num_nodes, edges, n)
-    relaxed = {}
-
-    for u,v,weight in edges:
-        if u == n:
-            continue
-        
-        relaxed[(u,v)] = weight + hashmap[u] - hashmap[v]
-    
-    all_pairs = {}
-
-    for u in range(n):
-        relaxed_edges = dijkstra(graph, u, relaxed)
-        all_pairs[u] = {}
-
-        for v in range (n):
-            # Check if the node has been reached or not
-            if relaxed_edges[v] < float('inf'):
-                distance = relaxed_edges[v] - hashmap[u] + hashmap[v]
-                all_pairs[u][v] = distance
-            else:
-                all_pairs[u][v] = float('inf')
-    
-    return all_pairs
-
-# Floyd Warshall's algorithm like the one from the graded labs
+# Floyd Warshall's algorithm like the one from graded lab 2
 def floyd_warshall(graph):
     n = graph.number_of_nodes()
     distances = [[float('inf')] * n for _ in range (n)]
 
-    # Set all self loops/edges to 0
+    # Set all self loops to weight 0 so the matrix has all 0 entries on the main diagonal
     for i in range (n):
         distances[i][i] = 0
     
@@ -145,7 +113,7 @@ def floyd_warshall(graph):
         for neighbor in graph.graph[node]:
             distances[node][neighbor] = graph.weight[(node,neighbor)]
     
-    # Main part of Floyd Warshall's algorithm
+    # This part is the main part of the Floyd Warshall algorithm that was in graded lab 2
     for k in range (n):
         for i in range (n):
             for j in range (n):

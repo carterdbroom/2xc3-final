@@ -10,7 +10,7 @@ class AdjacencyGraph():
             self.graph.append([])
         
     def has_edge(self, src, dst):
-        return dst in self.graph[src]
+        return src in self.graph[dst]
     
     # We edited this function so that there is only one entry if there is a self loop.
     def add_edge(self,src,dst):
@@ -22,7 +22,7 @@ class AdjacencyGraph():
     def get_graph(self,):
         return self.graph
     
-    # This is a modified DFS that checks for cycles.
+        # This is a modified DFS that checks for cycles.
     def has_cycle_helper(self, v, adj_list, visited_list, parent):
         visited_list[v] = True
 
@@ -55,7 +55,7 @@ class AdjacencyGraph():
             return True
         return False
 
-class WeightedDiGraph():
+class WeightedGraph():
     def __init__(self, nodes):
         self.graph = {}
         self.weight = {}
@@ -81,8 +81,8 @@ class WeightedDiGraph():
             self.weight[(node1, node2)] = weight
 
             #since it is undirected
-            #self.graph[node2].append(node1)
-            #self.weight[(node2, node1)] = weight
+            self.graph[node2].append(node1)
+            self.weight[(node2, node1)] = weight
 
     def number_of_nodes(self,):
         return len(self.graph)
@@ -102,6 +102,66 @@ class WeightedDiGraph():
                 
         # because it is undirected
         return total/2
+    
+class WeightedGraphAStar():
+    def __init__(self, nodes):
+        self.graph = {}
+        self.weight = {}
+        self.heuristic = {}
+        # Changed this part so that we pass in a list/array of station ids and we make each id a node in the graph and each node is a key in the graph dictionary
+        for node in nodes:
+            self.graph[node] = []
+
+    def are_connected(self, node1, node2):
+        # Checks if node2 is in the adjacency list of node1.
+        for node in self.graph[node1]:
+            if node == node2:
+                return True
+        return False
+
+    def connected_nodes(self, node):
+        return self.graph[node]
+
+    def add_node(self):
+        # If we want to add a node, we take the station_id with the highest number and + 1 to it to guarantee it's a unique station
+        # Honestly, I don't think we are ever going to use this for part 5
+        new_key = max(self.graph.keys()) + 1
+        self.graph[new_key] = []
+
+        return
+
+    def add_edge(self, node1, node2, weight):
+        # Adds an edge between node1 and node2 with the given weight.
+        if node1 not in self.graph[node2]:
+            self.graph[node1].append(node2)
+            self.weight[(node1, node2)] = weight
+
+            # Since it is undirected, add the reverse connection as well. (Might remove this but I think the station map she gave us is undirected, so idk)
+            self.graph[node2].append(node1)
+            self.weight[(node2, node1)] = weight
+        
+        return
+
+    def add_heuristic(self, node, heuristic_value):
+        self.heuristic[node] = heuristic_value
+        return
+
+    def number_of_nodes(self):
+        return len(self.graph)
+
+    def has_edge(self, src, dst):
+        return dst in self.graph[src]
+    
+    def has_edge_with_weight(self, src, dst, weight):
+        return dst in self.graph[src] and self.weight[(src, dst)] == weight
+
+    def get_weight(self):
+        total = 0
+        for node1 in self.graph:
+            for node2 in self.graph[node1]:
+                total += self.weight[(node1, node2)]
+        # Because it is undirected, each edge is counted twice.
+        return total / 2
 
 def create_random_adjacency_graph(nodes, edges):
     # Creating all the nodes in the graph, no edges connecting them
@@ -159,6 +219,3 @@ def create_random_weighted_graph(nodes, edges, high, low):
     
 
     return graph
-
-
-
