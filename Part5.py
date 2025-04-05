@@ -21,8 +21,9 @@ def build_graph(connections_data, stations_data, goal_station):
         coordinate1 = get_station_coords(stations_data, row['station1'])
         coordinate2 = get_station_coords(stations_data, row['station2'])
         weight = euclidean_dist(coordinate1,coordinate2)
+        line = row['line']
 
-        connections_graph.add_edge(int(row['station1']), int(row['station2']), weight)
+        connections_graph.add_edge(int(row['station1']), int(row['station2']), weight, line)
     
     for station in station_ids:
         heuristic_value = calculate_direct_distance(str(station), str(goal_station), stations_data)
@@ -40,7 +41,7 @@ def get_station_coords(stations_data, station_id):
     return None
 
 def euclidean_dist(coordinate1,coordinate2):
-    distance = math.sqrt((coordinate2[0]-coordinate1[0])**2 + (coordinate2[1]-coordinate2[1])**2)
+    distance = math.sqrt((coordinate2[0]-coordinate1[0])**2 + (coordinate2[1]-coordinate1[1])**2)
     return distance
 
 def calculate_direct_distance(source_station, goal_station, stations_data):
@@ -59,3 +60,4 @@ test_graph = build_graph(london_connections_data,london_stations_data, 70)
 
 print(test_graph.graph)
 print(test_graph.heuristic)
+print(test_graph.line)
