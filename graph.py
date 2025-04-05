@@ -219,6 +219,3 @@ def create_random_weighted_graph(nodes, edges, high, low):
     
 
     return graph
-
-
-
