@@ -108,6 +108,7 @@ class WeightedGraphAStar():
         self.graph = {}
         self.weight = {}
         self.heuristic = {}
+        self.line = {}
         # Changed this part so that we pass in a list/array of station ids and we make each id a node in the graph and each node is a key in the graph dictionary
         for node in nodes:
             self.graph[node] = []
@@ -130,11 +131,12 @@ class WeightedGraphAStar():
 
         return
 
-    def add_edge(self, node1, node2, weight):
+    def add_edge(self, node1, node2, weight, line):
         # Adds an edge between node1 and node2 with the given weight.
         if node1 not in self.graph[node2]:
             self.graph[node1].append(node2)
             self.weight[(node1, node2)] = weight
+            self.line[(node1,node2)] = line
 
             # Since it is undirected, add the reverse connection as well. (Might remove this but I think the station map she gave us is undirected, so idk)
             self.graph[node2].append(node1)

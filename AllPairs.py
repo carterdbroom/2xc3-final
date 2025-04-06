@@ -52,6 +52,8 @@ class PriorityQueue:
 def dijkstra(graph, source):
     distances = {node: float('inf') for node in graph.graph}
     distances[source] = 0
+    # Adding previous like the on that's in Floyd Warshall
+    previous = {node: None for node in graph.graph}
 
     minHeap = PriorityQueue()
 
@@ -67,9 +69,10 @@ def dijkstra(graph, source):
             distance = current_distance + graph.weight[(current_node, neighbor)]
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
+                previous[neighbor] = current_node
                 minHeap.push(neighbor, distance)
 
-    return distances
+    return distances, previous
 
 
 def bellman_ford(num_nodes, edges, source):
@@ -94,15 +97,21 @@ def bellman_ford(num_nodes, edges, source):
 # so we eventually run it with every node being a source one
 def allPair(graph):
     shortest_paths = {}
+    previous = {}
     for node in graph.graph.keys():
-        shortest_paths[node] = dijkstra(graph,node)
+        shortest_paths[node], previous[node] = dijkstra(graph,node)
     
-    return shortest_paths
+
+    print(shortest_paths)
+    print(previous)
+    return shortest_paths, previous
 
 # Floyd Warshall's algorithm like the one from graded lab 2
 def floyd_warshall(graph):
     n = graph.number_of_nodes()
     distances = [[float('inf')] * n for _ in range (n)]
+    # Keeping track of a previous matrix since the question mentioned this
+    previous = [[None] * n for _ in range (n)]
 
     # Set all self loops to weight 0 so the matrix has all 0 entries on the main diagonal
     for i in range (n):
@@ -112,6 +121,7 @@ def floyd_warshall(graph):
     for node in graph.graph:
         for neighbor in graph.graph[node]:
             distances[node][neighbor] = graph.weight[(node,neighbor)]
+            previous[node][neighbor] = node
     
     # This part is the main part of the Floyd Warshall algorithm that was in graded lab 2
     for k in range (n):
@@ -119,12 +129,15 @@ def floyd_warshall(graph):
             for j in range (n):
                 if distances[i][k] + distances[k][j] < distances[i][j]:
                     distances[i][j] = distances[i][k] + distances[k][j]
+                    previous[i][j] = previous[k][j]
 
     print(distances)
-    return distances
+    print (previous)
+    return distances, previous
 
 
-graph1 = graph.create_random_weighted_graph(4, 9)
-print(graph1.graph)
-print(graph1.weight)
-floyd_warshall(graph1)
+graph1 = graph.create_random_weighted_graph(6, 12, 10, 1)
+
+allPair(graph1)
+
+
