@@ -1,4 +1,3 @@
-from AllPairs import PriorityQueue
 import random
 import math
 # For the heuristic function we will use Euclidean Distance Heuristics. 
@@ -116,29 +115,6 @@ class MinHeap:
     def is_empty(self):
         return self.length == 0
 
-def dijkstra(graph, source, relaxed):
-    distances = {node: float('inf') for node in graph.graph}
-    distances[source] = 0
-
-    minHeap = PriorityQueue()
-
-    minHeap.push(source, 0)
-
-    while not minHeap.is_empty:
-        current_node, current_distance = minHeap.pop()
-        
-        if current_distance > distances[current_node]:
-            continue
-
-        for neighbor in graph.graph[current_node]:
-            if (current_node, neighbor) in relaxed:
-                new_distance = current_distance + relaxed[(current_node, neighbor)]
-                if new_distance < distances[neighbor]:
-                    distances[neighbor] = new_distance
-                    minHeap.push(neighbor,new_distance)
-
-    return distances
-
 class WeightedGraph():
     def __init__(self, nodes, coordinates):
         self.graph = {}
@@ -248,9 +224,9 @@ def calculate_heuristic(graph, destination):
 def A_Star(graph, source, destination, heuristic): 
 
     # Creating dictionaries for the g score (the actual weight between nodes) and the f score (which is the weight plus the heuristic).
-    g_score = {i : float('inf') for i in range(len(graph.graph))}
+    g_score = {i : float('inf') for i in graph.graph.keys()}
     g_score[source] = 0
-    f_score = {i : float('inf') for i in range(len(graph.graph))}
+    f_score = {i : float('inf') for i in graph.graph.keys()}
     f_score[source] = heuristic[source]
 
     # Creating a heap and pushing the value of g (which is 0) and then the value of h (which we get from our heuristic).
@@ -275,7 +251,7 @@ def A_Star(graph, source, destination, heuristic):
         # Iterating through all of the nodes that are connected to the node we are currently at. 
         for connecting_node in graph.graph[current_node]:
             potential_g_score = g_score[current_node] + graph.weight[(current_node, connecting_node)]         
-            
+            #print(connecting_node)    
             # If this is true, the path to this node is better than any we any we have found previously.
             if potential_g_score < g_score[connecting_node]: 
                 came_from[connecting_node] = current_node
@@ -304,42 +280,3 @@ def reconstruct_path(came_from, source, destination):
         path.append(current)
     # We have to reverse the list in the end since we are adding elements in reverse order.
     return path[::-1]
-
-
-
-def test_a_star():
-    # Set a seed for reproducibility
-    random.seed(42)
-
-    # Create a random weighted graph with 10 nodes and 20 edges
-    nodes = 10
-    edges = 20
-    graph = create_random_weighted_graph(nodes, edges)
-
-    # Pick source and destination
-    source = 0
-    destination = 9  # You can randomize if you want
-
-    # Calculate heuristic based on Euclidean distance
-    heuristic = calculate_heuristic(graph, destination)
-
-    # Run A* algorithm
-    came_from, path = A_Star(graph, source, destination, heuristic)
-
-    # Print results
-    print(f"Source node: {source}")
-    print(f"Destination node: {destination}")
-    print("Path found by A*:")
-    print(path)
-
-    # Optional: print the total path cost
-    if path:
-        cost = 0
-        for i in range(len(path) - 1):
-            cost += graph.weight[(path[i], path[i+1])]
-        print(f"Total cost: {cost:.2f}")
-    else:
-        print("No path found.")
-
-
-test_a_star()
