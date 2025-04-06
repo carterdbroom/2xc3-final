@@ -101,6 +101,9 @@ def allPair(graph):
     for node in graph.graph.keys():
         shortest_paths[node], previous[node] = dijkstra(graph,node)
     
+
+    print(shortest_paths)
+    print(previous)
     return shortest_paths, previous
 
 # Floyd Warshall's algorithm like the one from graded lab 2
@@ -134,6 +137,7 @@ def floyd_warshall(graph):
 
 
 graph1 = graph.create_random_weighted_graph(6, 12, 10, 1)
-print(graph1.graph)
-print(graph1.weight)
-floyd_warshall(graph1)
+
+allPair(graph1)
+
+

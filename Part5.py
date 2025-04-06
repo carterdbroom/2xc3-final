@@ -12,7 +12,6 @@ def parse_csv(filename):
     return rows
 
 
-
 def build_graph(connections_data, stations_data, goal_station):
     station_ids = [int(row['id']) for row in stations_data]
 
@@ -24,12 +23,20 @@ def build_graph(connections_data, stations_data, goal_station):
         line = row['line']
 
         connections_graph.add_edge(int(row['station1']), int(row['station2']), weight, line)
-    
-    for station in station_ids:
-        heuristic_value = calculate_direct_distance(str(station), str(goal_station), stations_data)
-        connections_graph.add_heuristic(station,heuristic_value)
+
+        
+        calculate_heuristic(connections_graph, goal_station, stations_data)
 
     return connections_graph
+
+
+def calculate_heuristic(graph, goal_station, stations_data):
+    for key in graph.graph.keys():
+        heuristic = calculate_direct_distance(str(key), str(goal_station), stations_data)
+        graph.add_heuristic(key,heuristic)
+
+    return
+
 
 def get_station_coords(stations_data, station_id):
     for row in stations_data:
@@ -52,12 +59,32 @@ def calculate_direct_distance(source_station, goal_station, stations_data):
 
     return direct_distance
 
+def station_lines(london_connections_data, london_stations_data):
+    station_lines_dictionary = {}
+
+    for row1 in london_stations_data:
+        station_lines_dictionary[row1['id']] = set()
+
+
+    for row in london_connections_data:
+        station_lines_dictionary[row['station1']].add(row['line'])
+        station_lines_dictionary[row['station2']].add(row['line'])
+
+    return station_lines_dictionary
+
+
+def find_adjacent_lines():
+    # Loop through and get all stations that are on the same line
+    # Adjacent lines, pick a station that has 2 or more lines connected through them, then pick another station from one of the lines, pick a 2nd station on the other line, compare their path length
+
+    return
+
 london_connections_data = parse_csv("london_connections.csv")
 london_stations_data = parse_csv("london_stations.csv")
 
 
 test_graph = build_graph(london_connections_data,london_stations_data, 70)
 
-print(test_graph.graph)
-print(test_graph.heuristic)
-print(test_graph.line)
+
+test_dict = station_lines(london_connections_data,london_stations_data)
+print(test_dict)
