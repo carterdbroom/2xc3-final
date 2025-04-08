@@ -76,18 +76,8 @@ def station_lines(london_connections_data, london_stations_data):
 
     return station_lines_dictionary
 
-
-def find_adjacent_lines():
-    # Loop through and get all stations that are on the same line
-    # Adjacent lines, pick a station that has 2 or more lines connected through them, then pick another station from one of the lines, pick a 2nd station on the other line, compare their path length
-
-    return
-
 london_connections_data = parse_csv("london_connections.csv")
 london_stations_data = parse_csv("london_stations.csv")
-
-
-test_graph = build_graph(london_connections_data,london_stations_data, 70)
 
 #print(test_graph.graph)
 #print(test_graph.heuristic)
@@ -143,8 +133,41 @@ def same_line(graph, stations_line_data, stations_data):
                         cost = path_cost(path,graph)
                         same_line_paths_cost[(source,destination)] = {'lines_in_common': lines_in_common, 'path': path, 'total_cost': cost}
 
+    
     return  same_line_paths_cost
 
+def adjacent_lines(graph,stations_line_data, stations_data):
+    adjacent_line_path_cost = {}
+    for source in graph.graph.keys():
+        for destination in graph.graph.keys():
+            if source < destination:
+                source_lines = station_lines_data.get(str(source))
+                destination_lines = station_lines_data.get(str(destination))
+
+                lines_in_common = source_lines.intersection(destination_lines)
+                if lines_in_common:
+                    continue
+
+                found_transfer_station = False
+                for intermediary in graph.graph.keys():
+                    if intermediary == source or intermediary == destination:
+                        continue
+
+                    intermediary_lines = stations_line_data.get(str(intermediary))
+
+                    if source_lines.intersection(intermediary_lines) and destination_lines.intersection(intermediary_lines):
+                        found_transfer_station = True
+                        break
+
+                if found_transfer_station:
+                    heuristic_value = calculate_heuristic(graph,destination,stations_data)
+                    came_from,path = AStar.A_Star(graph,source,destination,heuristic_value)
+                    if path:
+                        total_cost = path_cost(path,graph)
+                        adjacent_line_path_cost[(source,destination)] = {'path': path, 'cost': total_cost}
+
+
+    return adjacent_line_path_cost
 
 # Helper function here to help calculate the cost of a path
 def path_cost(path, graph):
@@ -154,3 +177,16 @@ def path_cost(path, graph):
         cost += graph.weight[(path[i],path[i + 1])]
     
     return cost
+
+def find_transfer():
+
+    return
+
+station_lines_data = station_lines(london_connections_data,london_stations_data)
+
+#same_line_path_cost = same_line(graph1,station_lines_data,london_stations_data)
+#print(same_line_path_cost)
+
+adjacent_line_path_cost = adjacent_lines(graph1, station_lines_data, london_stations_data)
+print(adjacent_line_path_cost)
+
