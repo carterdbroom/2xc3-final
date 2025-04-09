@@ -55,7 +55,7 @@ class AdjacencyGraph():
             return True
         return False
 
-class WeightedGraph():
+class WeightedDiGraph():
     def __init__(self, nodes):
         self.graph = {}
         self.weight = {}
@@ -80,9 +80,9 @@ class WeightedGraph():
             self.graph[node1].append(node2)
             self.weight[(node1, node2)] = weight
 
-            #since it is undirected
-            self.graph[node2].append(node1)
-            self.weight[(node2, node1)] = weight
+            #since it is directed
+            #self.graph[node2].append(node1)
+            #self.weight[(node2, node1)] = weight
 
     def number_of_nodes(self,):
         return len(self.graph)
@@ -141,6 +141,7 @@ class WeightedGraphAStar():
             # Since it is undirected, add the reverse connection as well. (Might remove this but I think the station map she gave us is undirected, so idk)
             self.graph[node2].append(node1)
             self.weight[(node2, node1)] = weight
+            self.line[(node2, node1)] = line
         
         return
 
@@ -195,10 +196,10 @@ def create_random_adjacency_graph(nodes, edges):
 # Here is the function that creates random graphs. 
 def create_random_weighted_graph(nodes, edges, high, low):
     # Creating all the nodes in the graph, no edges connecting them
-    graph = WeightedGraph(nodes)
+    graph = WeightedDiGraph(nodes)
 
-    # The max number of edges is n choose 2. We also add n since we are allowing self loops
-    if edges > (nodes + (nodes*(nodes - 1))/2): 
+    # The max number of edges is n choose 2 times two because we are doing directed
+    if edges > ((nodes*(nodes - 1))): 
         print("There cannot be double edges in your graph, there must be less edges than nodes!")
         return  graph
 

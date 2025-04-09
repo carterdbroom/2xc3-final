@@ -1,5 +1,7 @@
 import graph
 
+# Heap implementation used in class, it's basically a fundamental implementation of a heap
+# Unsure if we were allowed to use heapq for this part so I made this just to be safe
 class PriorityQueue:
     def __init__(self):
         self.heap = []
@@ -52,19 +54,20 @@ class PriorityQueue:
 def dijkstra(graph, source):
     distances = {node: float('inf') for node in graph.graph}
     distances[source] = 0
-    # Adding previous like the on that's in Floyd Warshall
+    
     previous = {node: None for node in graph.graph}
 
     minHeap = PriorityQueue()
 
     minHeap.push(source, 0)
 
+    # Checking if the heap is empty or not before performing normal Dijkstra's
     while not minHeap.is_empty():
         current_node, current_distance = minHeap.pop()
         
         if current_distance > distances[current_node]:
             continue
-
+        
         for neighbor in graph.graph[current_node]:
             distance = current_distance + graph.weight[(current_node, neighbor)]
             if distance < distances[neighbor]:
@@ -74,30 +77,35 @@ def dijkstra(graph, source):
 
     return distances, previous
 
-
+# Implementation of bellman ford that also keeps track of a previous dictionary
 def bellman_ford(num_nodes, edges, source):
     hashmap = {i: float('inf') for i in range (num_nodes)}
+    previous = {i: None for i in range (num_nodes)}
 
     hashmap[source] = 0
+    # Previous node of the source would be itself
+    previous[source] = source
 
     # Performing at most n - 1 edge relaxations
     for _ in range (num_nodes-1):
         for u,v,weight in edges:
             if hashmap[u] + weight < hashmap[v]:
                 hashmap[v] = hashmap[u] + weight
+                previous[v] = u
     
     for u,v,weight in edges:
         if hashmap[u] + weight < hashmap[v]:
             print("Negative cycle detected")
             return
     
-    return hashmap
+    return hashmap, previous
 
 # Basically running Dijkstra's algorithm for V times where each pass we run it on a different source
 # so we eventually run it with every node being a source one
-def allPair(graph):
+def allPair_dijkstra(graph):
     shortest_paths = {}
     previous = {}
+    # Looping through every node to run Dijkstra's on it
     for node in graph.graph.keys():
         shortest_paths[node], previous[node] = dijkstra(graph,node)
     
@@ -106,7 +114,31 @@ def allPair(graph):
     print(previous)
     return shortest_paths, previous
 
+def allPair_bellman_ford(graph):
+    shortest_paths = {}
+    previous = {}
+    num_nodes = len(graph.graph)
+
+    edges = []
+    visited = set()
+    #.items() returns a tuple of (key,value) which we can then use to store u,v,weight as a tuple in our edges array for bellman ford
+    for (u,v),weight in graph.weight.items():
+        if (v,u) not in visited:
+            edges.append((u,v,weight))
+            visited.add((u,v))
+
+    # Looping through every node in the graph to act as our source node and running bellman ford on from that source node
+    for node in graph.graph.keys():
+        shortest_paths[node],previous[node] = bellman_ford(num_nodes, edges, node)
+
+
+    print(shortest_paths)
+    print (previous)
+    return shortest_paths, previous
+
+
 # Floyd Warshall's algorithm like the one from graded lab 2
+# Apparently we're not supposed to do this (bruh wasted my time)
 def floyd_warshall(graph):
     n = graph.number_of_nodes()
     distances = [[float('inf')] * n for _ in range (n)]
@@ -138,6 +170,7 @@ def floyd_warshall(graph):
 
 graph1 = graph.create_random_weighted_graph(6, 12, 10, 1)
 
-allPair(graph1)
+#allPair_dijkstra(graph1)
+allPair_bellman_ford(graph1)
 
 
