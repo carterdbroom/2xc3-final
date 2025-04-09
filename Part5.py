@@ -72,7 +72,7 @@ london_stations_data = parse_csv("london_stations.csv")
 
 
 test_graph = build_graph_2(london_connections_data,london_stations_data)
-
+graph1 = build_graph_2(london_connections_data, london_stations_data)
 
 
 # Used to calculate a dictionary storing heuristic values for the given goal_station
@@ -106,14 +106,15 @@ def compareAllPairs(graph):
     start1 = timeit.default_timer()
     all_pairs_a_star(graph)
     end1 = timeit.default_timer()
-    a_star_time = (end1 - start1)(10**6)
+    a_star_time = (end1 - start1)*(10**6)
     start2 = timeit.default_timer()
-    AllPairs.allPair(graph)
+    AllPairs.allPair_dijkstra(graph)
     end2 = timeit.default_timer()
-    djikstras_time = (end2 - start2)(10**6)
+    djikstras_time = (end2 - start2)*(10**6)
     return (a_star_time, djikstras_time)
 
-print(compareAllPairs(graph1))
+#print(compareAllPairs(graph1))
+
 # Compare the times of specific source(s) and destination(s)
 def compareSpecific(graph):
     nodes = []
@@ -143,6 +144,7 @@ def compareSpecific(graph):
 
     return a_star_times, dijkstras_times
 
+# Just graphs A* and Dijkstra's when we wan to compare them.
 def comparison_specific_graph(a_star_times, dijkstras_times):
     trials = np.arange(len(a_star_times))  # [0, 1, ..., 19]
     width = 0.35
@@ -160,8 +162,8 @@ def comparison_specific_graph(a_star_times, dijkstras_times):
     plt.tight_layout()
     plt.savefig("comparison_plot.png")
 
-time1, time2 = compareSpecific(graph1)
-comparison_specific_graph(time1, time2)
+#time1, time2 = compareSpecific(graph1)
+#comparison_specific_graph(time1, time2)
 
 # This function here is used to count the number of transfers taken by a certain path
 def count_num_transfers(path, connections_line_data):
@@ -249,8 +251,7 @@ def draw_histogram (transfer_count):
 london_connections_data = parse_csv("london_connections.csv")
 london_stations_data = parse_csv("london_stations.csv")
 
-graph1 = build_graph_2(london_connections_data, london_stations_data)
 
-print(graph1.graph)
-build_histogram(graph1, london_connections_data)
+#print(graph1.graph)
+#build_histogram(graph1, london_connections_data)
 
