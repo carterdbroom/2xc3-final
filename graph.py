@@ -141,6 +141,7 @@ class WeightedGraphAStar():
             # Since it is undirected, add the reverse connection as well. (Might remove this but I think the station map she gave us is undirected, so idk)
             self.graph[node2].append(node1)
             self.weight[(node2, node1)] = weight
+            self.line[(node2, node1)] = line
         
         return
 

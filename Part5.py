@@ -150,8 +150,12 @@ def build_histogram(graph):
     return
 
 def draw_histogram (transfer_count):
+    keys = sorted(transfer_count.keys())
+    values = [transfer_count[k] for k in keys]
+
     fig=plt.figure(figsize=(20,8))
-    plt.bar(transfer_count.keys(), transfer_count.values())
+    plt.bar(keys,values)
+    plt.xticks(keys)
 
     plt.xlabel("Number of Transfers made")
     plt.ylabel("Number of paths that made each number of transfers")
