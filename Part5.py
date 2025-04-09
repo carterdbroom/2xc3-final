@@ -4,6 +4,8 @@ import math
 import AStar
 import matplotlib.pyplot as plt
 
+# Simple function using the csv library to parse a csv file and store its rows as dictionaries where the key are the column headers
+# These dictionaries are then stored in a list/array
 def parse_csv(filename):
     rows = []
     with open(filename, mode='r', newline='') as csvfile:
@@ -13,22 +15,8 @@ def parse_csv(filename):
 
     return rows
 
-
-def build_graph(connections_data, stations_data, goal_station):
-    station_ids = [int(row['id']) for row in stations_data]
-
-    connections_graph = graph.WeightedGraphAStar(station_ids)
-    for row in connections_data:
-        coordinate1 = get_station_coords(stations_data, row['station1'])
-        coordinate2 = get_station_coords(stations_data, row['station2'])
-        weight = euclidean_dist(coordinate1,coordinate2)
-        line = row['line']
-
-        connections_graph.add_edge(int(row['station1']), int(row['station2']), weight, line)
-
-    return connections_graph
-
-
+# Function that is used to build the graph based on the connections and station data from the two given csv files
+# It uses the heuristic graph or WeightedAStar graph class we defined in our graph.py file
 def build_graph_2(connections_data, stations_data):
     station_ids = [int(row['id']) for row in stations_data]
 
@@ -43,6 +31,8 @@ def build_graph_2(connections_data, stations_data):
 
     return connections_graph
 
+# Linearly searches the stations data array because the csv file for station data isn't sorted (GOD WHY? IT SHOULD'VE BEEN SORTED!)
+# When it find the station id we're looking for it returns a tuple of longitude and latitude
 def get_station_coords(stations_data, station_id):
     for row in stations_data:
         if row['id'] == station_id:
@@ -52,10 +42,13 @@ def get_station_coords(stations_data, station_id):
     
     return None
 
+# Euclidean distance equation to calculate the driving distance if two stations have a connection
+# If they don't have a connection then we use it to calculate the heuristic as well. 
 def euclidean_dist(coordinate1,coordinate2):
     distance = math.sqrt((coordinate2[0]-coordinate1[0])**2 + (coordinate2[1]-coordinate1[1])**2)
     return distance
 
+# Find the driving distance and heuristic value using euclidean distance
 def calculate_direct_distance(source_station, goal_station, stations_data):
     coordinate1 = get_station_coords(stations_data, source_station)
     coordinate2 = get_station_coords(stations_data, goal_station)
@@ -64,25 +57,7 @@ def calculate_direct_distance(source_station, goal_station, stations_data):
 
     return direct_distance
 
-def station_lines(london_connections_data, london_stations_data):
-    station_lines_dictionary = {}
-
-    for row1 in london_stations_data:
-        station_lines_dictionary[row1['id']] = set()
-
-
-    for row in london_connections_data:
-        station_lines_dictionary[row['station1']].add(row['line'])
-        station_lines_dictionary[row['station2']].add(row['line'])
-
-    return station_lines_dictionary
-
-london_connections_data = parse_csv("london_connections.csv")
-london_stations_data = parse_csv("london_stations.csv")
-
-#print(test_graph.graph)
-#print(test_graph.heuristic)
-
+# Used to calculate a dictionary storing heuristic values for the given goal_station
 def calculate_heuristic(graph, goal_station, stations_data):
     total_heuristic = {}
     for key in graph.graph.keys():
@@ -91,15 +66,15 @@ def calculate_heuristic(graph, goal_station, stations_data):
 
     return total_heuristic
 
-graph1 = build_graph_2(london_connections_data, london_stations_data)
 
-# Generates all pairs
+# Generates the shortest path between every single possible pair of source and destination stations in the subway system
 def all_pairs_a_star(graph):
     all_paths = {}
     
     for i in graph.graph.keys():
         all_paths[i] = {}
 
+    # This uses the A_star implementation that we made in our AStar file
     for destination in graph.graph.keys():
         total_heuristic = calculate_heuristic(graph, destination, london_stations_data)
         for source in graph.graph.keys():           
@@ -107,21 +82,19 @@ def all_pairs_a_star(graph):
 
     return all_paths            
 
-
-#print(all_pairs_a_star(graph1))
-
-#same_line_path_cost = same_line(graph1,station_lines_data,london_stations_data)
-#print(same_line_path_cost)
-
+# This function here is used to count the number of transfers taken by a certain path
 def count_num_transfers(path, graph):
     transfers = 0
 
+    # Returns 0 since there are self loops in our data
     if not path or len(path) < 2:
         return 0
     
     current_line = graph.line.get((path[0],path[1]))
 
+    # Looping through every station in the path (like a sliding window solution) and check if any line changes were taken 
     for i in range (1,len(path) - 1):
+        # We can check this because we store the line of every connection in our A star graph
         next_line = graph.line.get((path[i],path[i+1]))
         if next_line != current_line:
             transfers += 1
@@ -129,7 +102,7 @@ def count_num_transfers(path, graph):
 
     return transfers
 
-
+# Tally up the number of transfers taken by each path so that we can use this data to plot the distribution histogram
 def build_histogram(graph):
     all_pair_paths = all_pairs_a_star(graph)
     transfer_count = {}
@@ -138,8 +111,11 @@ def build_histogram(graph):
         for destination, data in destination_dict.items():
             if source < destination:
                 path = data[1]
-            
+
                 num_transfers = count_num_transfers(path,graph)
+                # If the current number of transfers is not a key in the dictionary, then initialize an entry in the dictionary
+                # with that number of transfers as the key with a default value of 1 since there is 1 path that took this many
+                # transfers
                 if num_transfers not in transfer_count:
                     transfer_count[num_transfers] = 1
             
@@ -149,6 +125,7 @@ def build_histogram(graph):
     draw_histogram(transfer_count)      
     return
 
+# Simple function to draw our distribution histogram
 def draw_histogram (transfer_count):
     keys = sorted(transfer_count.keys())
     values = [transfer_count[k] for k in keys]
@@ -165,6 +142,11 @@ def draw_histogram (transfer_count):
     plt.show()
 
     return
+
+london_connections_data = parse_csv("london_connections.csv")
+london_stations_data = parse_csv("london_stations.csv")
+
+graph1 = build_graph_2(london_connections_data, london_stations_data)
 
 print(graph1.graph)
 build_histogram(graph1)
