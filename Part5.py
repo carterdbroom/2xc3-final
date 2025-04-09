@@ -2,6 +2,7 @@ import csv
 import graph
 import math
 import AStar
+import matplotlib.pyplot as plt
 
 def parse_csv(filename):
     rows = []
@@ -106,87 +107,60 @@ def all_pairs_a_star(graph):
 
     return all_paths            
 
+
 #print(all_pairs_a_star(graph1))
-
-print(graph1.graph)
-
-def same_line(graph, stations_line_data, stations_data):
-    same_line_paths_cost = {}
-
-    for source in graph.graph.keys():
-        for destination in graph.graph.keys():
-            # We check this so that we only count the path once because going from destination to source is also a path the algorithm could take
-            if source < destination:
-                source_lines = stations_line_data.get(str(source))
-                destination_lines = stations_line_data.get(str(destination))
-                # Using basic set intersection method (I did not know this even existed before googling)
-                lines_in_common = source_lines.intersection(destination_lines)
-
-                # Check to see if there are lines in common at all between the pair of stations the loop is currently examining
-                if lines_in_common:
-                    heuristic_value = calculate_heuristic(graph, destination, stations_data)
-                    # Came_from is not used here but it is returned by A* so we just left it there as a dummy variable so that we can grab path
-                    came_from, path = AStar.A_Star(graph,source,destination, heuristic_value)
-
-                    #Check to see if there is even a path returned by A*
-                    if path:
-                        cost = path_cost(path,graph)
-                        same_line_paths_cost[(source,destination)] = {'lines_in_common': lines_in_common, 'path': path, 'total_cost': cost}
-
-    
-    return  same_line_paths_cost
-
-def adjacent_lines(graph,stations_line_data, stations_data):
-    adjacent_line_path_cost = {}
-    for source in graph.graph.keys():
-        for destination in graph.graph.keys():
-            if source < destination:
-                source_lines = station_lines_data.get(str(source))
-                destination_lines = station_lines_data.get(str(destination))
-
-                lines_in_common = source_lines.intersection(destination_lines)
-                if lines_in_common:
-                    continue
-
-                found_transfer_station = False
-                for intermediary in graph.graph.keys():
-                    if intermediary == source or intermediary == destination:
-                        continue
-
-                    intermediary_lines = stations_line_data.get(str(intermediary))
-
-                    if source_lines.intersection(intermediary_lines) and destination_lines.intersection(intermediary_lines):
-                        found_transfer_station = True
-                        break
-
-                if found_transfer_station:
-                    heuristic_value = calculate_heuristic(graph,destination,stations_data)
-                    came_from,path = AStar.A_Star(graph,source,destination,heuristic_value)
-                    if path:
-                        total_cost = path_cost(path,graph)
-                        adjacent_line_path_cost[(source,destination)] = {'path': path, 'cost': total_cost}
-
-
-    return adjacent_line_path_cost
-
-# Helper function here to help calculate the cost of a path
-def path_cost(path, graph):
-    cost = 0
-    # Sums up the weight from the source node to the next one in the path and increments for the whole path until the end
-    for i in range (len(path) - 1):
-        cost += graph.weight[(path[i],path[i + 1])]
-    
-    return cost
-
-def find_transfer():
-
-    return
-
-station_lines_data = station_lines(london_connections_data,london_stations_data)
 
 #same_line_path_cost = same_line(graph1,station_lines_data,london_stations_data)
 #print(same_line_path_cost)
 
-adjacent_line_path_cost = adjacent_lines(graph1, station_lines_data, london_stations_data)
-print(adjacent_line_path_cost)
+def count_num_transfers(path, graph):
+    transfers = 0
 
+    if not path or len(path) < 2:
+        return 0
+    
+    current_line = graph.line.get((path[0],path[1]))
+
+    for i in range (1,len(path) - 1):
+        next_line = graph.line.get((path[i],path[i+1]))
+        if next_line != current_line:
+            transfers += 1
+            current_line = next_line
+
+    return transfers
+
+
+def build_histogram(graph):
+    all_pair_paths = all_pairs_a_star(graph)
+    transfer_count = {}
+
+    for source, destination_dict in all_pair_paths.items():
+        for destination, data in destination_dict.items():
+            if source < destination:
+                path = data[1]
+            
+                num_transfers = count_num_transfers(path,graph)
+                if num_transfers not in transfer_count:
+                    transfer_count[num_transfers] = 1
+            
+                else:
+                    transfer_count[num_transfers] += 1
+
+    draw_histogram(transfer_count)      
+    return
+
+def draw_histogram (transfer_count):
+    fig=plt.figure(figsize=(20,8))
+    plt.bar(transfer_count.keys(), transfer_count.values())
+
+    plt.xlabel("Number of Transfers made")
+    plt.ylabel("Number of paths that made each number of transfers")
+    plt.title("Distribution of Transfers made in each shortest path")
+
+    plt.savefig("Distribution.png")
+    plt.show()
+
+    return
+
+print(graph1.graph)
+build_histogram(graph1)
