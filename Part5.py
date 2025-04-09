@@ -83,36 +83,58 @@ def all_pairs_a_star(graph):
     return all_paths            
 
 # This function here is used to count the number of transfers taken by a certain path
-def count_num_transfers(path, graph):
+def count_num_transfers(path, connections_line_data):
     transfers = 0
 
     # Returns 0 since there are self loops in our data
     if not path or len(path) < 2:
         return 0
     
-    current_line = graph.line.get((path[0],path[1]))
+    current_line = connections_line_data[(path[0],path[1])]
 
     # Looping through every station in the path (like a sliding window solution) and check if any line changes were taken 
     for i in range (1,len(path) - 1):
         # We can check this because we store the line of every connection in our A star graph
-        next_line = graph.line.get((path[i],path[i+1]))
-        if next_line != current_line:
+        next_line = connections_line_data[(path[i],path[i+1])]
+        common_lines = current_line.intersection(next_line)
+        if len(common_lines) == 0:
             transfers += 1
             current_line = next_line
 
     return transfers
 
+# Used to find which lines each connection is connected through since there are duplicates in the data set
+def connection_lines(connections_data):
+    connection_lines_dictionary = {}
+    for row in connections_data:
+        if (row['station1'], row['station2']) not in connection_lines_dictionary:
+            connection_lines_dictionary[(int(row['station1']), int(row['station2']))] = set()
+            connection_lines_dictionary[(int(row['station1']), int(row['station2']))].add(int(row['line']))
+        else:
+            connection_lines_dictionary[(int(row['station1']), int(row['station2']))].add(int(row['line']))
+
+        if  (row['station2'], row['station1']) not in connection_lines_dictionary:
+            connection_lines_dictionary[(int(row['station2']), int(row['station1']))] = set()
+            connection_lines_dictionary[(int(row['station2']), int(row['station1']))].add(int(row['line']))
+        else:
+            connection_lines_dictionary[(int(row['station2']), int(row['station1']))].add(int(row['line']))
+
+    return connection_lines_dictionary
+
+
 # Tally up the number of transfers taken by each path so that we can use this data to plot the distribution histogram
-def build_histogram(graph):
+def build_histogram(graph, connections_data):
     all_pair_paths = all_pairs_a_star(graph)
     transfer_count = {}
+
+    connection_lines_data = connection_lines(connections_data)
 
     for source, destination_dict in all_pair_paths.items():
         for destination, data in destination_dict.items():
             if source < destination:
                 path = data[1]
 
-                num_transfers = count_num_transfers(path,graph)
+                num_transfers = count_num_transfers(path, connection_lines_data)
                 # If the current number of transfers is not a key in the dictionary, then initialize an entry in the dictionary
                 # with that number of transfers as the key with a default value of 1 since there is 1 path that took this many
                 # transfers
@@ -149,4 +171,4 @@ london_stations_data = parse_csv("london_stations.csv")
 graph1 = build_graph_2(london_connections_data, london_stations_data)
 
 print(graph1.graph)
-build_histogram(graph1)
+build_histogram(graph1, london_connections_data)
